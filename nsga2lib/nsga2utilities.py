@@ -1,13 +1,15 @@
 #Creates Mutated population (non-dominating sorting and crowding distance functions)
-import numpy
+import numpy, os
 from math import floor
 
 #-------------------------------------------------------------------------------
 #/*This program subroutine is used to print the report*/
 def report(pop1_ptr,pop2_ptr,igen,ngen,SWATdir,ncross,nmut):
-    outputfile=open(SWATdir+"/NSGA2.OUT/output.out", "a")
+    outputoutfile=os.path.join(SWATdir,"NSGA2.OUT","output.out")
+    plotoutfile=os.path.join(SWATdir,"NSGA2.OUT","plot.out")
+    outputfile=open(outputoutfile, "a")
     if (igen == ngen):
-        plotfile=open(SWATdir+"/NSGA2.OUT/plot.out", "w")
+        plotfile=open(plotoutfile, "w")
         plotfile.writelines("# Feasible and Non-dominated Objective Vector\n");
             
     popsize = len(pop1_ptr["ind"])
@@ -161,7 +163,7 @@ def CreateDefaultPopulation(popsize,chrom,nchrom,nfunc):
     popltn["maxrank"]=0        #/*Maximum rank present in the population*/
     popltn["rankno"]=numpy.zeros(2*popsize,int)#/*Individual at different ranks*/
     popltn["ind"]=[]    #/*Different Individuals*/
-    for i in xrange(popsize):
+    for i in range(popsize):
         indvdl = {}
         indvdl["genes"]=numpy.zeros(chrom,int)#/*bianry chromosome*/
         indvdl["rank"]=0      #/*Rank of the individual*/
@@ -196,7 +198,7 @@ def Selection(old_pop_ptr,pop2_ptr,warmup_random): #nselect() in deb's c code #s
     indZeros = indzeros(chrom)
 
     k=-1;
-    for n in xrange(popsize):
+    for n in range(popsize):
         k+=1
         j=0;j1 = 0;
 
@@ -392,8 +394,9 @@ def indcmp1(ptr1,ptr2,nfunc): #Used in NonDominatedSorting
         else: value = 3;                   #/*value = 3 for incomparable*/
     return value;
 
-def NonDominatedSorting(gen,popsize,global_pop_ptr,nfunc,globalpop):#grank
-    gr = open("./NSGA2.Out/g_rank_record.out","a");
+def NonDominatedSorting(gen,popsize,global_pop_ptr,nfunc,globalpop,SWATdir):#grank
+    grankoutfile=os.path.join(SWATdir,"NSGA2.OUT","g_rank_record.out")
+    gr = open(grankoutfile,"a");
     gr.writelines("Genration no. = %d\n"%gen);
     #/*----------------------------* RANKING *---------------------------------*/
     rnk = 0;
@@ -488,7 +491,7 @@ def gsort(rnk,sel,popsize,globalpop): #Used in CreateMatePopulation
     i=0
     while i<(sel):
         a = array[i][0];
-        globalpop['flag'][a] = 1;
+        globalpop['flag'][int(a)] = 1;
         i+=1
     return;
 
@@ -549,7 +552,7 @@ def CrowdingDistance(rnk,popsize,nfunc,globalpop,fpara1):#gshare
         i=0
         while i<(m1):
             a = length[i][0];
-            globalpop['cub_len'][a] += length[i][1]
+            globalpop['cub_len'][int(a)] += length[i][1]
             i+=1;
         j+=1
 
@@ -558,7 +561,7 @@ def CrowdingDistance(rnk,popsize,nfunc,globalpop,fpara1):#gshare
 
 #/*-------------------SELECTION KEEPING FRONTS ALIVE--------------*/
 #/*Elitism And Sharing Implemented*/ #### Nondominated sorting, crowding distances
-def CreateMatePopFromNewandOldPops(pop1_ptr,pop2_ptr,pop3_ptr,gen): #keepaliven
+def CreateMatePopFromNewandOldPops(pop1_ptr,pop2_ptr,pop3_ptr,gen,SWATdir): #keepaliven
     popsize = len(pop1_ptr["ind"])
     chrom = len(pop1_ptr["ind"][0]["genes"])
     nchrom = len(pop1_ptr["ind"][0]["xbin"])
@@ -601,7 +604,7 @@ def CreateMatePopFromNewandOldPops(pop1_ptr,pop2_ptr,pop3_ptr,gen): #keepaliven
     global_pop_ptr = globalpop;
 
     #####-------- Non-dominated sorting --------#####  #/*Finding the global ranks */ 
-    NonDominatedSorting(gen,popsize,global_pop_ptr,nfunc,globalpop);
+    NonDominatedSorting(gen,popsize,global_pop_ptr,nfunc,globalpop,SWATdir);
 
     m = globalpop['maxrank'];
 
